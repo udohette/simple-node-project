@@ -1,7 +1,7 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,35 +9,35 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.json({
-    message: 'Simple Node.js API is running',
-    status: 'success',
-    runningWith: 'PM2 ready'
+    message: "Simple Node.js API is running and Routed by Nginx",
+    status: "success",
+    runningWith: "PM2 ready",
   });
 });
 
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   res.json({
-    status: 'healthy',
+    status: "healthy and Running Well",
     uptime: process.uptime(),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
-app.post('/hello', (req, res) => {
-  const name = req.body.name || 'Friend';
+app.post("/hello", (req, res) => {
+  const name = req.body.name || "Friend";
 
   res.json({
     message: `Hello, ${name}!`,
-    receivedData: req.body
+    receivedData: req.body,
   });
 });
 
 app.use((req, res) => {
   res.status(404).json({
-    status: 'error',
-    message: 'Route not found'
+    status: "error",
+    message: "Route not found",
   });
 });
 

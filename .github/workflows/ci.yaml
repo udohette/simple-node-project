@@ -1,15 +1,22 @@
-name: Simple Node Project
+name: Simple Node Production Deployment
 
 on:
   push:
     branches:
       - main
-      - staging
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
 
 jobs:
   deploy-production:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    environment: production
 
     steps:
       - name: Check out code
@@ -20,8 +27,11 @@ jobs:
         env:
           HOST: ${{ secrets.PROD_HOST }}
         run: |
+          set -euo pipefail
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
 
       - name: Deploy to production
         shell: bash
@@ -29,61 +39,31 @@ jobs:
           HOST: ${{ secrets.PROD_HOST }}
           KEY: ${{ secrets.PROD_KEY }}
         run: |
+          set -euo pipefail
+          trap 'rm -f web-project.pem' EXIT
+
           printf '%s\n' "$KEY" > web-project.pem
           chmod 600 web-project.pem
 
           ssh -i web-project.pem ubuntu@"$HOST" << 'EOF'
-            set -e
+            set -euo pipefail
 
-            cd /home/ubuntu/simple-node-project
+            APP_DIR="/home/ubuntu/simple-node-project"
+            APP_PORT="3000"
+
+            cd "$APP_DIR"
+
             git fetch origin
             git reset --hard origin/main
+
             npm ci --omit=dev
-            pm2 restart simple-node-api
+
+            pm2 startOrReload ecosystem.config.js \
+              --env production \
+              --update-env
+
             pm2 save
+
+            curl --fail --silent --show-error \
+              "http://127.0.0.1:${APP_PORT}/health"
           EOF
-
-          rm -f web-project.pem
-
-  deploy-staging:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging'
-
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Add staging host to known hosts
-        shell: bash
-        env:
-          HOST: ${{ secrets.STAGING_HOST }}
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
-
-      - name: Deploy to staging
-        shell: bash
-        env:
-          HOST: ${{ secrets.STAGING_HOST }}
-          KEY: ${{ secrets.STAGING_KEY }}
-        run: |
-          printf '%s\n' "$KEY" > web-project.pem
-          chmod 600 web-project.pem
-
-          ssh -i web-project.pem ubuntu@"$HOST" << 'EOF'
-            set -e
-
-            cd /home/ubuntu/simple-node-project
-            git fetch origin
-            git reset --hard origin/staging
-            npm ci
-            pm2 restart simple-node-api
-            pm2 save
-          EOF
-
-          rm -f web-project.pem

@@ -1,0 +1,82 @@
+name: Simple Node Project
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.20.2
+
+      - name: Add Host to Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
+        shell: /usr/bin/bash -e {0}
+        env:
+          HOST: ${{ secrets.PROD_HOST }}
+
+      - name: Deployment
+        run: |
+          echo "$KEY" > web-project.pem
+          chmod 600 private_key.pem
+          ssh -i "web-project.pem" ubuntu@ec2$HOST.compute-1.amazonaws.com"
+            cd simple-node-project &&
+            git fetch --all && git reset --hard origin/main &&
+            pm2 restart simple-node-project &&
+            pm2 save
+          "
+          rm web-project.pem
+        shell: /usr/bin/bash -e {0}
+        env:
+          HOST: ${{ secrets.PROD_HOST }}
+          KEY: ${{ secrets.PROD_KEY }}
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Add Host to Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
+        shell: /usr/bin/bash -e {0}
+        env:
+          HOST: ${{ secrets.PROD_HOST }}
+
+      - name: Deployment
+        run: |
+          echo "$KEY" > web-project.pem
+          chmod 600 web-project.pem
+          ssh -i "web-project.pem" ubuntu@ec2$HOST.compute-1.amazonaws.com"
+            cd simple-node-project &&
+            git fetch --all && git reset --hard origin/staging &&
+            pm2 restart simple-node-project &&
+            pm2 save
+          "
+          rm web-project.pem
+        shell: /usr/bin/bash -e {0}
+        env:
+          HOST: ${{ secrets.STAGING_HOST }}
+          KEY: ${{ secrets.STAGING_KEY }}

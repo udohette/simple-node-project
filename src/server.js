@@ -12,7 +12,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.json({
     message:
-      "Simple Node.js API is running and Routed by Nginx on Production Server EC2 Instance ",
+      "Simple Node.js API is running and Routed by Nginx on Stagin Server Server EC2 Instance ",
     status: "success",
     runningWith: "PM2 ready",
   });
@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
 
 app.get("/health", (req, res) => {
   res.json({
-    status: "healthy and Running Well on on Production Server EC2 Instance",
+    status: "healthy and Running Well on on Statging Server EC2 Instance",
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   });

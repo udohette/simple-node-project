@@ -12,7 +12,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.json({
     message:
-      "Simple Node.js API is running and Routed by Nginx on Production Server EC2 Instance",
+      "Simple Node.js API is running and Routed by Nginx on Production Server EC2 Instance ",
     status: "success",
     runningWith: "PM2 ready",
   });

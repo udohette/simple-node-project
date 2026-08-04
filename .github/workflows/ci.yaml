@@ -32,7 +32,7 @@ jobs:
         run: |
           echo "$KEY" > web-project.pem
           chmod 600 web-project.pem
-          ssh -i "web-project.pem" ubuntu@ec2$HOST.compute-1.amazonaws.com"
+          ssh -i "web-project.pem" ubuntu@$HOST"
             cd simple-node-project &&
             git fetch --all && git reset --hard origin/main &&
             pm2 restart simple-node-project &&
@@ -69,7 +69,7 @@ jobs:
         run: |
           echo "$KEY" > web-project.pem
           chmod 600 web-project.pem
-          ssh -i "web-project.pem" ubuntu@ec2$HOST.compute-1.amazonaws.com"
+          ssh -i "web-project.pem" ubuntu@$HOST"
             cd simple-node-project &&
             git fetch --all && git reset --hard origin/staging &&
             pm2 restart simple-node-project &&

@@ -16,7 +16,8 @@ concurrency:
 jobs:
   deploy-production:
     runs-on: ubuntu-latest
-    environment: production
+    environment:
+      name: production
 
     steps:
       - name: Check out code
@@ -28,8 +29,10 @@ jobs:
           HOST: ${{ secrets.PROD_HOST }}
         run: |
           set -euo pipefail
+
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
+
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
@@ -42,14 +45,38 @@ jobs:
           set -euo pipefail
           trap 'rm -f web-project.pem' EXIT
 
-          printf '%s\n' "$KEY" > web-project.pem
+          printf '%s' "$KEY" | tr -d '\r' > web-project.pem
           chmod 600 web-project.pem
 
-          ssh -i web-project.pem ubuntu@"$HOST" << 'EOF'
+          echo "Validating SSH private key..."
+          ssh-keygen -y -f web-project.pem > /dev/null
+
+          ssh \
+            -o IdentitiesOnly=yes \
+            -i web-project.pem \
+            ubuntu@"$HOST" << 'EOF'
             set -euo pipefail
 
             APP_DIR="/home/ubuntu/simple-node-project"
             APP_PORT="3000"
+
+            export NVM_DIR="$HOME/.nvm"
+
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              . "$NVM_DIR/nvm.sh"
+            else
+              echo "NVM was not found at $NVM_DIR/nvm.sh"
+              exit 1
+            fi
+
+            echo "Node version:"
+            node -v
+
+            echo "npm version:"
+            npm -v
+
+            echo "PM2 version:"
+            pm2 -v
 
             cd "$APP_DIR"
 
@@ -64,6 +91,11 @@ jobs:
 
             pm2 save
 
-            curl --fail --silent --show-error \
+            curl \
+              --fail \
+              --silent \
+              --show-error \
               "http://127.0.0.1:${APP_PORT}/health"
+
+            echo "Production deployment completed successfully."
           EOF

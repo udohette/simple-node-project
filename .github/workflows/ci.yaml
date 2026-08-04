@@ -31,7 +31,7 @@ jobs:
       - name: Deployment
         run: |
           echo "$KEY" > web-project.pem
-          chmod 600 private_key.pem
+          chmod 600 web-project.pem
           ssh -i "web-project.pem" ubuntu@ec2$HOST.compute-1.amazonaws.com"
             cd simple-node-project &&
             git fetch --all && git reset --hard origin/main &&

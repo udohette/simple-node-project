@@ -43,17 +43,17 @@ jobs:
           KEY: ${{ secrets.PROD_KEY }}
         run: |
           set -euo pipefail
-          trap 'rm -f web-project.pem' EXIT
+          trap 'rm -f ci-cd-deploy..pem' EXIT
 
-          printf '%s' "$KEY" | tr -d '\r' > web-project.pem
-          chmod 600 web-project.pem
+          printf '%s' "$KEY" | tr -d '\r' > ci-cd-deploy..pem
+          chmod 600 ci-cd-deploy..pem
 
           echo "Validating SSH private key..."
-          ssh-keygen -y -f web-project.pem > /dev/null
+          ssh-keygen -y -f ci-cd-deploy..pem > /dev/null
 
           ssh \
             -o IdentitiesOnly=yes \
-            -i web-project.pem \
+            -i ci-cd-deploy..pem \
             ubuntu@"$HOST" << 'EOF'
             set -euo pipefail
 

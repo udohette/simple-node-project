@@ -19,7 +19,7 @@ app.get("/", (req, res) => {
 
 app.get("/health", (req, res) => {
   res.json({
-    status: "healthy and Running Well on on Statging Server EC2 Instance",
+    status: "healthy and Running Well on on Local EC2 Instance",
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   });

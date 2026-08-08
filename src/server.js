@@ -11,7 +11,8 @@ app.use(express.json());
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Simple Node.js API is running Production Code",
+    message:
+      "Simple Node.js API is running Production Code via Cloudfare Domain Provicer",
     status: "success",
     runningWith: "PM2 ready",
   });
@@ -19,7 +20,7 @@ app.get("/", (req, res) => {
 
 app.get("/health", (req, res) => {
   res.json({
-    status: "healthy and Running Well on on Local EC2 Instance",
+    status: "healthy and Running Well on on Production EC2 Instance",
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   });
